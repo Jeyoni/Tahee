@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tahee - Tailor Discovery & Order Management Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Sans-serif (Plus Jakarta Sans) & Embroidery Font (Caveat) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Leaflet CSS -->
+     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'tahee-pink': '#F8C8DC',
+                        'tahee-yellow': '#FFF5BA',
+                        'tahee-bg': '#FDFBF7',
+                        'tahee-blue': '#D0E8F2',
+                        'tahee-brown': '#5C4033',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        embroidery: ['Caveat', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FDFBF7;
+            color: #5C4033;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Stitched Embroidery Text Effect */
+        .text-embroidery {
+            font-family: 'Caveat', cursive;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 0px rgba(92, 64, 51, 0.2);
+            position: relative;
+        }
+        .text-embroidery::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            border-bottom: 2px dashed #5C4033;
+            opacity: 0.3;
+        }
+
+        /* Custom Cards & Buttons */
+        .tahee-card {
+            background-color: #FFFFFF;
+            border: 2px solid #5C4033;
+            border-radius: 20px;
+            box-shadow: 4px 4px 0px #5C4033;
+            transition: all 0.2s ease;
+        }
+        .tahee-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0px #5C4033;
+        }
+
+        .tahee-btn-primary {
+            background-color: #F8C8DC;
+            color: #5C4033;
+            border: 2px solid #5C4033;
+            font-weight: 700;
+            border-radius: 14px;
+            box-shadow: 3px 3px 0px #5C4033;
+            transition: all 0.15s ease;
+        }
+        .tahee-btn-primary:hover {
+            background-color: #f3b0cb;
+            transform: translateY(-1px);
+            box-shadow: 4px 4px 0px #5C4033;
+        }
+        .tahee-btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 1px 1px 0px #5C4033;
+        }
+
+        .tahee-btn-secondary {
+            background-color: #FFF5BA;
+            color: #5C4033;
+            border: 2px solid #5C4033;
+            font-weight: 700;
+            border-radius: 14px;
+            box-shadow: 3px 3px 0px #5C4033;
+            transition: all 0.15s ease;
+        }
+        .tahee-btn-secondary:hover {
+            background-color: #f7ea9b;
+        }
+
+        .tahee-tab {
+            border: 2px solid #5C4033;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-weight: 700;
+            background: #FFFFFF;
+            transition: all 0.2s ease;
+        }
+        .tahee-tab.active {
+            background: #F8C8DC;
+            box-shadow: 2px 2px 0px #5C4033;
+        }
+
+        /* Serrated Receipt Cut Styles */
+        .tahee-receipt {
+            background: #FFFFFF;
+            border: 2px solid #5C4033;
+            box-shadow: 6px 8px 0px #5C4033;
+            position: relative;
+        }
+        .receipt-edge-top {
+            background: linear-gradient(135deg, #5C4033 25%, transparent 25%),
+                        linear-gradient(225deg, #5C4033 25%, transparent 25%);
+            background-position: 0 0;
+            background-size: 16px 16px;
+            height: 10px;
+        }
+        .receipt-edge-bottom {
+            background: linear-gradient(45deg, #5C4033 25%, transparent 25%),
+                        linear-gradient(315deg, #5C4033 25%, transparent 25%);
+            background-position: 0 0;
+            background-size: 16px 16px;
+            height: 10px;
+        }
+
+        .modal-fade {
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative bg-tahee-bg text-tahee-brown">
+
+    <!-- Reusable Lola Logo SVG Template -->
+    <svg style="display: none;">
+    <symbol id="lola-svg-template" viewBox="50 50 200 200">
+        <image href="images/lola tahee.png" x="48" y="48" width="200" height="200"
+               preserveAspectRatio="xMidYMid meet" />
+    </symbol>
+</svg>
+
+    <!-- TOP HEADER NAVBAR -->
+    <header class="bg-white border-b-2 border-tahee-brown sticky top-0 z-40 px-4 py-3 shadow-sm">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="openAuthModal()">
+                <div class="w-10 h-10 bg-tahee-pink rounded-full border-2 border-tahee-brown p-0.5 shadow-sm">
+                    <svg viewBox="0 0 200 200" class="w-full h-full">
+                        <use href="#lola-svg-template" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-xl tracking-tight text-tahee-brown flex items-center gap-1">
+                        Tahee
+                    </h1>
+                    <p class="text-[10px] text-tahee-brown/70 font-semibold">Local Tailor Discovery & Tracking</p>
+                </div>
+            </div>
+
+            <div id="user-profile-bar" class="flex items-center gap-3">
+                <span id="header-role-badge" class="text-xs bg-tahee-blue text-tahee-brown border border-tahee-brown px-3 py-1 rounded-full font-bold">
+                    Nagpapatahi
+                </span>
+                <button onclick="openAuthModal()" class="tahee-btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5">
+                    <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                    <span id="user-display-name">Maria Santos</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CANVAS -->
+    <main class="max-w-6xl mx-auto px-4 py-6 w-full space-y-8 flex-1">
+
+        <!-- HERO SECTION WITH EMBROIDERED WELCOME & SLIDESHOW -->
+        <section class="tahee-card p-6 md:p-8 bg-gradient-to-r from-tahee-bg via-white to-tahee-pink/20 relative overflow-hidden">
+            <div class="grid md:grid-cols-2 gap-6 items-center">
+                <!-- Left: Embroidered Welcome & Logo -->
+                <div class="text-center md:text-left space-y-4">
+                    <div class="inline-flex items-center gap-2 bg-tahee-yellow border border-tahee-brown px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                        <i data-lucide="scissors" class="w-3.5 h-3.5"></i>
+                        <span>Handcrafted Patahi Platform</span>
+                    </div>
+
+                    <!-- Centered Logo Hero Showcase -->
+                    <div class="flex justify-center md:justify-start">
+                        <div class="w-20 h-20 bg-tahee-pink rounded-full border-2 border-tahee-brown p-1 shadow-[3px_3px_0px_#5C4033] relative">
+                            <svg viewBox="0 0 200 200" class="w-full h-full">
+                                <use href="#lola-svg-template" />
+                            </svg>
+                            <span class="absolute -bottom-1 -right-1 bg-white text-[10px] border border-tahee-brown font-extrabold px-1.5 py-0.5 rounded-full">Lola</span>
+                        </div>
+                    </div>
+
+                    <h2 class="text-4xl md:text-5xl text-embroidery font-bold text-tahee-brown leading-tight">
+                        Hello, Welcome to Tahee!
+                    </h2>
+                    <p class="text-sm text-tahee-brown/80 font-medium leading-relaxed max-w-md">
+                        Discover hidden neighborhood seamstresses, track custom fitting orders step-by-step, and generate digital patahi receipts with exact doorway location pins.
+                    </p>
+
+                    <div class="pt-2 flex flex-wrap gap-3 justify-center md:justify-start">
+                        <button onclick="openAuthModal()" class="tahee-btn-primary px-5 py-2.5 text-sm flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Get Started / Switch Role
+                        </button>
+                        <button onclick="goToTickets()" class="tahee-btn-secondary px-5 py-2.5 text-sm flex items-center gap-2">
+                            <i data-lucide="receipt" class="w-4 h-4"></i> View Digital Receipt Ticket
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Lola's Sewing Work Carousel Slideshow -->
+                <div class="relative w-full h-64 md:h-72 rounded-2xl border-2 border-tahee-brown overflow-hidden shadow-[4px_4px_0px_#5C4033] bg-white">
+                    <div id="slideshow-container" class="w-full h-full relative">
+                        <!-- Slide 1 -->
+                        <div class="slide-item absolute inset-0 transition-opacity duration-700 opacity-100 flex flex-col justify-between p-6 bg-cover bg-center" style="background-image: linear-gradient(to top, rgba(92,64,51,0.8), transparent), url('images/slide-1.jpg');">
+                            <span class="bg-tahee-pink text-tahee-brown border border-tahee-brown text-xs font-extrabold px-3 py-1 rounded-full self-start">
+                                Specialization Showcase
+                            </span>
+                            <div class="text-white space-y-1">
+                                <h3 class="font-bold text-lg">Traditional Barong & Filipiniana Sewing</h3>
+                                <p class="text-[12px] text-white/90 pr-44">Intricate piña fabric embroidery and custom sizing by local master tailors.</p>
+                            </div>
+                        </div>
+                        <!-- Slide 2 -->
+                        <div class="slide-item absolute inset-0 transition-opacity duration-700 opacity-0 flex flex-col justify-between p-6 bg-cover bg-center" style="background-image: linear-gradient(to top, rgba(92,64,51,0.8), transparent), url('https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80');">
+                            <span class="bg-tahee-yellow text-tahee-brown border border-tahee-brown text-xs font-extrabold px-3 py-1 rounded-full self-start">
+                                Custom Suits & Gown Alterations
+                            </span>
+                            <div class="text-white space-y-1">
+                                <h3 class="font-bold text-lg">Precision Measurement & Hemming</h3>
+                                <p class="text-[12px] text-white/90 pr-44">Perfect fit adjustments for weddings, formal galas, and school uniforms.</p>
+                            </div>
+                        </div>
+                        <!-- Slide 3 -->
+                        <div class="slide-item absolute inset-0 transition-opacity duration-700 opacity-0 flex flex-col justify-between p-6 bg-cover bg-center" style="background-image: linear-gradient(to top, rgba(92,64,51,0.8), transparent), url('images/slide-3.jpg');">
+                            <span class="bg-tahee-blue text-tahee-brown border border-tahee-brown text-xs font-extrabold px-3 py-1 rounded-full self-start">
+                                Upcycled Handmade Products
+                            </span>
+                            <div class="text-white space-y-1">
+                                <h3 class="font-bold text-lg">Repurposed Fabric Crafts</h3>
+                                <p class="text-[12px] text-white/90 pr-44">Custom tote bags, throw pillow covers, and handmade patches.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slideshow Navigation Controls -->
+                    <div class="absolute bottom-3 right-3 flex items-center gap-1.5 z-20">
+    <button onclick="prevSlide()" aria-label="Previous slide" class="w-7 h-7 bg-white/90 border border-tahee-brown rounded-full flex items-center justify-center text-tahee-brown hover:bg-tahee-pink">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 6l-6 6 6 6" />
+        </svg>
+    </button>
+
+    <span id="slide-num-indicator" class="text-[10px] font-extrabold bg-white/90 border border-tahee-brown px-2 py-0.5 rounded-full text-tahee-brown">1 / 3</span>
+
+    <button onclick="nextSlide()" aria-label="Next slide" class="w-7 h-7 bg-white/90 border border-tahee-brown rounded-full flex items-center justify-center text-tahee-brown hover:bg-tahee-pink">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6" />
+        </svg>
+    </button>
+</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CUSTOMER VIEW (NAGPAPATAHI) -->
+        <section id="customer-view" class="space-y-6">
+            <!-- Navigation Tabs -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl border-2 border-tahee-brown">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="cust-tab-map-btn" onclick="switchCustomerTab('map')" class="tahee-tab active text-sm flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i> Explore Map & Tailors
+                    </button>
+                    <button id="cust-tab-specialty-btn" onclick="switchCustomerTab('specialty')" class="tahee-tab text-sm flex items-center gap-2">
+                        <i data-lucide="scissors" class="w-4 h-4"></i> Specialties Breakdown
+                    </button>
+                    <button id="cust-tab-orders-btn" onclick="switchCustomerTab('orders')" class="tahee-tab text-sm flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4"></i> Live Order Tracking <span id="active-orders-badge" class="bg-tahee-yellow border border-tahee-brown text-[10px] px-2 py-0.5 rounded-full font-bold">1 Active</span>
+                    </button>
+                    <button id="cust-tab-ticket-btn" onclick="switchCustomerTab('ticket')" class="tahee-tab text-sm flex items-center gap-2">
+                        <i data-lucide="receipt" class="w-4 h-4"></i> Digital Patahi Ticket
+                    </button>
+                </div>
+                <div class="text-xs font-semibold bg-tahee-blue/50 text-tahee-brown px-3 py-1.5 rounded-xl border border-tahee-brown flex items-center gap-1.5">
+                    <i data-lucide="navigation" class="w-3.5 h-3.5"></i>
+                    <span>At this location: <strong>City of Santa Rosa, Laguna</strong></span>
+                </div>
+            </div>
+
+            <!-- TAB 1: EXPLORE MAP & NEARBY TAILORS -->
+<div id="cust-tab-map" class="space-y-6">
+
+    <!-- Search & Filters -->
+    <div class="tahee-card p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div class="relative w-full md:w-1/2">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-tahee-brown/60"></i>
+            <input id="tailor-search" type="search" oninput="applyTailorFilters()" placeholder="Search tailor name, specialty (e.g. Barong, Gown), or street..." class="w-full pl-9 pr-4 py-2 border-2 border-tahee-brown rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-tahee-pink">
+        </div>
+        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+            <button onclick="filterTailors('all')" data-filter="all" class="filter-chip text-xs bg-tahee-pink border border-tahee-brown px-3 py-1.5 rounded-xl font-bold">All Shops</button>
+            <button onclick="filterTailors('rush')" data-filter="rush" class="filter-chip text-xs bg-white border border-tahee-brown px-3 py-1.5 rounded-xl font-semibold hover:bg-tahee-yellow">⚡ Rush Available</button>
+            <button onclick="filterTailors('barong')" data-filter="barong" class="filter-chip text-xs bg-white border border-tahee-brown px-3 py-1.5 rounded-xl font-semibold hover:bg-tahee-yellow">Barong & Filipiniana</button>
+            <button onclick="filterTailors('alterations')" data-filter="alterations" class="filter-chip text-xs bg-white border border-tahee-brown px-3 py-1.5 rounded-xl font-semibold hover:bg-tahee-yellow">Alterations</button>
+        </div>
+    </div>
+
+    <!-- Actual Map -->
+    <div class="tahee-card p-4 relative h-80 overflow-hidden flex flex-col justify-between">
+
+        <!-- The real map inside the empty box -->
+        <div id="tailor-map" class="absolute inset-0 z-0"></div>
+
+        <!-- Top bar -->
+        <div class="relative z-10 flex justify-between items-start pointer-events-none">
+            <div class="bg-white/90 backdrop-blur border border-tahee-brown px-3 py-1.5 rounded-xl text-xs font-bold pointer-events-auto">
+                📍 <span id="tailor-count">2 Hidden Tailors</span> Found Near You
+            </div>
+            <span class="bg-tahee-pink border border-tahee-brown text-[10px] font-bold px-2.5 py-1 rounded-xl pointer-events-auto">Custom Lola GPS Markers</span>
+        </div>
+
+        <!-- Bottom bar -->
+        <div class="relative z-10 bg-white/90 backdrop-blur border border-tahee-brown p-2 rounded-xl text-[11px] font-medium flex items-center justify-between">
+            <span>Click any Lola pin to see the walking route to the exact doorway entrance.</span>
+            <span class="text-xs font-bold text-tahee-brown underline cursor-pointer" onclick="recenterMap()">Recenter Location</span>
+        </div>
+    </div>
+
+    <!-- Tailor Shop Cards Grid -->
+    <div class="grid md:grid-cols-2 gap-4">
+        <!-- Shop Card 1 -->
+        <div id="tailor-card-1" data-tags="rush barong filipiniana gown" class="tahee-card p-5 space-y-3">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-tahee-pink rounded-full border-2 border-tahee-brown p-0.5">
+                        <svg viewBox="0 0 200 200" class="w-full h-full">
+                            <use href="#lola-svg-template" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base">Aling Nena’s Sewing Nook</h3>
+                        <p class="text-xs text-tahee-brown/70">Master Seamstress • 35 yrs experience</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <span class="bg-tahee-yellow border border-tahee-brown text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">★ 4.9 (48)</span>
+                    <span id="status-tailor-card-1" class="text-[10px] font-bold border border-tahee-brown px-2 py-0.5 rounded-full bg-green-100">● Open</span>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1 bg-tahee-bg p-3 rounded-xl border border-tahee-brown/30">
+                <p class="font-bold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-tahee-brown"></i> Sampaguita St., Gate 3, Brgy. Lalakay (250m away)</p>
+                <p class="text-tahee-brown/80"><strong>Entrance Guide:</strong> Yellow gate behind sari-sari store with blue bell.</p>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5">
+                <span class="text-[10px] bg-tahee-blue border border-tahee-brown px-2 py-0.5 rounded-md font-semibold">Filipiniana & Barong</span>
+                <span class="text-[10px] bg-tahee-blue border border-tahee-brown px-2 py-0.5 rounded-md font-semibold">Gown Fits</span>
+                <span class="text-[10px] bg-tahee-yellow border border-tahee-brown px-2 py-0.5 rounded-md font-bold">⚡ Rush 24h</span>
+            </div>
+
+            <div class="pt-2 flex items-center gap-2">
+                <button onclick="openLastMileModal('Aling Nena’s Sewing Nook', 'Sampaguita St., Gate 3', 'Yellow gate behind sari-sari store. Press blue doorbell twice.')" class="tahee-btn-secondary text-xs px-3 py-2 flex-1 flex items-center justify-center gap-1">
+                    <i data-lucide="compass" class="w-3.5 h-3.5"></i> Entrance Guide
+                </button>
+                <button onclick="openNewOrderModal('Aling Nena’s Sewing Nook')" class="tahee-btn-primary text-xs px-4 py-2 flex-1 flex items-center justify-center gap-1">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Place Patahi Order
+                </button>
+                <button onclick="openReportModal('Aling Nena’s Sewing Nook', 'Shop Listing')" class="bg-amber-50 hover:bg-amber-100 text-tahee-brown border-2 border-tahee-brown text-xs px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-1 transition-all">
+                    <i data-lucide="flag" class="w-3.5 h-3.5 text-red-600"></i> Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Shop Card 2 -->
+        <div id="tailor-card-2" data-tags="alterations suits zipper patches" class="tahee-card p-5 space-y-3">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-tahee-yellow rounded-full border-2 border-tahee-brown p-0.5">
+                        <svg viewBox="0 0 200 200" class="w-full h-full">
+                            <use href="#lola-svg-template" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base">Mang Cardo’s Custom Suits & Pants</h3>
+                        <p class="text-xs text-tahee-brown/70">Suit Tailoring & Zipper Repairs</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <span class="bg-tahee-yellow border border-tahee-brown text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">★ 4.8 (32)</span>
+                    <span id="status-tailor-card-2" class="text-[10px] font-bold border border-tahee-brown px-2 py-0.5 rounded-full bg-green-100">● Open</span>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1 bg-tahee-bg p-3 rounded-xl border border-tahee-brown/30">
+                <p class="font-bold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-tahee-brown"></i> Rizal Ave., Alley 2, House #42 (400m away)</p>
+                <p class="text-tahee-brown/80"><strong>Entrance Guide:</strong> Second floor brown wooden door up the spiral stairs.</p>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5">
+                <span class="text-[10px] bg-tahee-blue border border-tahee-brown px-2 py-0.5 rounded-md font-semibold">Suit Hemming</span>
+                <span class="text-[10px] bg-tahee-blue border border-tahee-brown px-2 py-0.5 rounded-md font-semibold">Zipper Patch</span>
+            </div>
+
+            <div class="pt-2 flex items-center gap-2">
+                <button onclick="openLastMileModal('Mang Cardo’s Custom Suits', 'Rizal Ave., Alley 2, House #42', 'Second floor brown wooden door up spiral stairs.')" class="tahee-btn-secondary text-xs px-3 py-2 flex-1 flex items-center justify-center gap-1">
+                    <i data-lucide="compass" class="w-3.5 h-3.5"></i> Entrance Guide
+                </button>
+                <button onclick="openNewOrderModal('Mang Cardo’s Custom Suits')" class="tahee-btn-primary text-xs px-4 py-2 flex-1 flex items-center justify-center gap-1">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Place Patahi Order
+                </button>
+                <button onclick="openReportModal('Mang Cardo’s Custom Suits', 'Shop Listing')" class="bg-amber-50 hover:bg-amber-100 text-tahee-brown border-2 border-tahee-brown text-xs px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-1 transition-all">
+                    <i data-lucide="flag" class="w-3.5 h-3.5 text-red-600"></i> Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shown when the search/filter matches no shops -->
+    <div id="no-tailors-msg" class="tahee-card p-6 text-center space-y-1 hidden">
+        <p class="text-2xl">🧵</p>
+        <p class="text-sm font-bold">No tailors found</p>
+        <p class="text-xs text-tahee-brown/70">Try a different name, specialty or street, or tap <strong>All Shops</strong>.</p>
+    </div>
+
+    <!-- ===== Map styling ===== -->
+    <style>
+        /* Leaflet's +/- zoom buttons down */
+        #tailor-map .leaflet-top    { top: 52px; }
+        #tailor-map .leaflet-bottom { bottom: 56px; }
+        .lola-marker { background: none; border: none; }
+        .ticket-map .leaflet-control-attribution { font-size: 8px; }
+        .tahee-map-popup .leaflet-popup-content-wrapper {
+            border: 2px solid #5C4033;
+            border-radius: 14px;
+            box-shadow: 3px 3px 0px #5C4033;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .tahee-map-popup .leaflet-popup-content { margin: 10px 14px; }
+    </style>
+
+    <!-- ===== Map code ===== -->
+    <script>
+        // 1) WHERE THE USER IS (center of the map)
+        const USER_LOCATION = [15.02869, 120.61855];
+
+        // 2) TAILOR SHOPS
+        //    Shop's real latitude & longitude.
+        const tailors = [
+            { cardId: "tailor-card-1", shop: "Aling Nena’s Sewing Nook", label: "Aling Nena's (250m)",      coords: [15.0305, 120.6170], color: "bg-tahee-pink" },
+            { cardId: "tailor-card-2", shop: "Mang Cardo’s Custom Suits", label: "Mang Cardo's Suit (400m)", coords: [15.0272, 120.6215], color: "bg-tahee-yellow" }
+        ];
+
+        // 3) MAP
+        const map = L.map("tailor-map", { zoomControl: false }).setView(USER_LOCATION, 16);
+        L.control.zoom({ position: "topright" }).addTo(map);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        // 4) "YOU ARE HERE" PIN
+        L.marker(USER_LOCATION).addTo(map).bindTooltip("You are here");
+
+        // 5) LOLA PINS
+        function lolaIcon(label, color) {
+            return L.divIcon({
+                className: "lola-marker",
+                iconSize: [140, 60],
+                iconAnchor: [70, 20],
+                html: `
+                    <div class="flex flex-col items-center cursor-pointer hover:scale-110 transition-transform">
+                        <div class="w-10 h-10 ${color} rounded-full border-2 border-tahee-brown p-0.5 shadow-md">
+                            <svg viewBox="0 0 200 200" class="w-full h-full"><use href="#lola-svg-template" /></svg>
+                        </div>
+                        <span class="bg-white border border-tahee-brown text-[10px] font-bold px-2 py-0.5 rounded-md shadow whitespace-nowrap -mt-1">${label}</span>
+                    </div>`
+            });
+        }
+
+        tailors.forEach(function (t) {
+            t.marker = L.marker(t.coords, { icon: lolaIcon(t.label, t.color) })
+                .addTo(map)
+                .on("click", function () {
+                    showRouteTo(t);
+                    if (typeof highlightTailor === "function") highlightTailor(t.cardId);
+                });
+        });
+
+        // 6) "RECENTER LOCATION" BUTTON
+        function recenterMap() {
+            clearRoute();
+            map.setView(USER_LOCATION, 16);
+        }
+
+        // 8) WALKING ROUTE TO A SHOP (when a Lola pin is clicked)
+        //    Uses the free OpenStreetMap (FOSSGIS) walking router — same one as the "Get Directions" link.
+        let routeLayer = null;
+        let routeRequest = 0;
+
+        function formatDistance(meters) {
+            return meters < 1000 ? Math.round(meters) + ' m' : (meters / 1000).toFixed(1) + ' km';
+        }
+
+        function routePopupHTML(t, body) {
+            const info = (typeof SHOP_INFO !== "undefined" && SHOP_INFO[t.shop]) || {};
+            return `
+                <div class="space-y-1.5 text-tahee-brown" style="min-width: 180px;">
+                    <p class="font-black text-sm">${t.shop}</p>
+                    ${body}
+                    ${info.note ? `<p class="text-[11px]"><strong>Entrance:</strong> ${info.note}</p>` : ""}
+                    <button onclick="clearRoute()" class="text-[11px] font-bold underline hover:opacity-70">Clear route</button>
+                </div>`;
+        }
+
+        function removeRouteLine() {
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+                routeLayer = null;
+            }
+        }
+
+        function clearRoute() {
+            routeRequest++; // ignore any route that is still loading
+            removeRouteLine();
+            map.closePopup();
+        }
+
+        // White outline + brown dashed "stitch" line on top
+        function drawRoute(points) {
+            routeLayer = L.layerGroup([
+                L.polyline(points, { color: "#FFFFFF", weight: 8, opacity: 0.9 }),
+                L.polyline(points, { color: "#5C4033", weight: 4, dashArray: "8 8" })
+            ]).addTo(map);
+            map.fitBounds(L.latLngBounds(points), { paddingTopLeft: [40, 80], paddingBottomRight: [40, 80], animate: false });
+        }
+
+        async function showRouteTo(t) {
+            removeRouteLine();
+            const request = ++routeRequest;
+            const shopSpot = t.marker.getLatLng();
+
+            const popup = L.popup({ className: "tahee-map-popup", offset: [0, -10], autoPanPaddingTopLeft: [10, 60] })
+                .setLatLng(shopSpot)
+                .setContent(routePopupHTML(t, `<p class="text-[11px]">🧵 Finding the walking route…</p>`))
+                .openOn(map);
+
+            try {
+                const url = "https://routing.openstreetmap.de/routed-foot/route/v1/driving/" +
+                    `${USER_LOCATION[1]},${USER_LOCATION[0]};${shopSpot.lng},${shopSpot.lat}?overview=full&geometries=geojson`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (request !== routeRequest) return; // another pin was clicked in the meantime
+
+                const route = data.routes && data.routes[0];
+                if (!route) throw new Error("No route found");
+
+                drawRoute(route.geometry.coordinates.map(c => [c[1], c[0]])); // GeoJSON is [lng, lat]
+                const minutes = Math.max(1, Math.round(route.duration / 60));
+                popup.setContent(routePopupHTML(t, `<p class="text-[11px] font-bold">🚶 ${formatDistance(route.distance)} · about ${minutes} min walk</p>`));
+            } catch (err) {
+                if (request !== routeRequest) return;
+                // Offline or the routing service is down: draw a straight line instead
+                drawRoute([USER_LOCATION, [shopSpot.lat, shopSpot.lng]]);
+                popup.setContent(routePopupHTML(t, `
+                    <p class="text-[11px] font-bold">📏 ${formatDistance(map.distance(USER_LOCATION, shopSpot))} away (straight line)</p>
+                    <p class="text-[10px] opacity-70">Couldn’t load street directions right now.</p>`));
+            }
+        }
+
+        // 7) FIX FOR TABS
+        new ResizeObserver(function () { map.invalidateSize(); })
+            .observe(document.getElementById("tailor-map"));
+    </script>
+</div>
+
+            <!-- TAB 2: SPECIALTIES BREAKDOWN -->
+            <div id="cust-tab-specialty" class="space-y-6 hidden">
+                <div class="tahee-card p-6 bg-white space-y-4">
+                    <h2 class="text-xl font-bold">Patahi Specialties & Craft Directory</h2>
+                    <p class="text-xs text-tahee-brown/80">Browse neighborhood tailors categorized by specific sewing expertise.</p>
+                    <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                        <!-- Spec 1 -->
+                        <div class="border-2 border-tahee-brown p-4 rounded-2xl bg-tahee-pink/40 space-y-2">
+    <div class="w-10 h-10 bg-white border border-tahee-brown rounded-xl flex items-center justify-center font-bold text-lg">🇵🇭</div>
+    <h3 class="font-bold text-sm">Barong & Filipiniana</h3>
+    <p class="text-[11px] text-tahee-brown/80">Custom organza, piña lining, embroidery, traditional fits.</p>
+    <a href="#" onclick="showTailorsFor('barong'); return false;" class="inline-block text-[10px] font-bold text-tahee-brown underline cursor-pointer hover:opacity-70">
+        12 Tailors Available →
+    </a>
+</div>
+                        <!-- Spec 2 -->
+                        <div class="border-2 border-tahee-brown p-4 rounded-2xl bg-tahee-yellow/40 space-y-2">
+    <div class="w-10 h-10 bg-white border border-tahee-brown rounded-xl flex items-center justify-center font-bold text-lg">👗</div>
+    <h3 class="font-bold text-sm">Gown & Dress Fitting</h3>
+    <p class="text-[11px] text-tahee-brown/80">Formal gown alterations, waist tapering, hem adjustments.</p>
+    <a href="#" onclick="showTailorsFor('gown'); return false;" class="inline-block text-[10px] font-bold text-tahee-brown underline cursor-pointer hover:opacity-70">
+        8 Tailors Available →
+    </a>
+</div>
+                        <!-- Spec 3 -->
+                         <div class="border-2 border-tahee-brown p-4 rounded-2xl bg-tahee-blue/40 space-y-2">
+    <div class="w-10 h-10 bg-white border border-tahee-brown rounded-xl flex items-center justify-center font-bold text-lg">✂️</div>
+    <h3 class="font-bold text-sm">Patches & Alterations</h3>
+    <p class="text-[11px] text-tahee-brown/80">Pants shortening, broken zipper replacement, patch sewing.</p>
+    <a href="#" onclick="showTailorsFor('gown'); return false;" class="inline-block text-[10px] font-bold text-tahee-brown underline cursor-pointer hover:opacity-70">
+        15 Tailors Available →
+    </a>
+</div>
+                        <!-- Spec 4 -->
+                         <div class="border-2 border-tahee-brown p-4 rounded-2xl bg-tahee-blue/40 space-y-2">
+    <div class="w-10 h-10 bg-white border border-tahee-brown rounded-xl flex items-center justify-center font-bold text-lg">👜</div>
+    <h3 class="font-bold text-sm">Repurposed Crafts</h3>
+    <p class="text-[11px] text-tahee-brown/80">Upcycled denim bags, pillow cases, handmade curtains.</p>
+    <a href="#" onclick="showTailorsFor('gown'); return false;" class="inline-block text-[10px] font-bold text-tahee-brown underline cursor-pointer hover:opacity-70">
+        5 Tailors Available →
+    </a>
+</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: LIVE ORDER TRACKING -->
+            <div id="cust-tab-orders" class="space-y-6 hidden">
+                <!-- Order cards are built by renderTracking() -->
+                <div id="tracking-list" class="space-y-6"></div>
+            </div>
+
+            <!-- TAB 4: DIGITAL TICKET / RECEIPT VIEW -->
+            <div id="cust-tab-ticket" class="space-y-6 hidden flex flex-col items-center scroll-mt-24">
+                <div class="text-center max-w-md w-full">
+                    <h2 class="text-xl font-black text-tahee-brown">Digital Order Ticket</h2>
+                    <p class="text-xs text-tahee-brown/80 mb-4">Official patahi order breakdown and location tracking</p>
+
+                    <!-- Tickets are built by renderAll() -->
+                    <div id="new-tickets-list" class="space-y-8 mb-8"></div>
+
+                    <button onclick="window.print()" class="tahee-btn-primary text-xs px-6 py-2.5 rounded-xl mt-4 inline-flex items-center gap-2">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Print / Save Digital Receipt Ticket
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAILOR VIEW (MANANAHI SHOP MANAGEMENT) -->
+        <section id="tailor-view" class="space-y-6 hidden">
+            <!-- Tailor Sub-Navigation Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl border-2 border-tahee-brown">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="tailor-tab-setup-btn" onclick="switchTailorTab('setup')" class="tahee-tab active text-sm flex items-center gap-2">
+                        <i data-lucide="store" class="w-4 h-4"></i> Shop Setup & Location Pinning
+                    </button>
+                    <button id="tailor-tab-queue-btn" onclick="switchTailorTab('queue')" class="tahee-tab text-sm flex items-center gap-2">
+                        <i data-lucide="list-checks" class="w-4 h-4"></i> Order Management Queue <span id="tailor-orders-badge" class="bg-tahee-yellow border border-tahee-brown text-[10px] px-2 py-0.5 rounded-full font-bold">1 Order</span>
+                    </button>
+                    <button id="tailor-tab-analytics-btn" onclick="switchTailorTab('analytics')" class="tahee-tab text-sm flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Sales & Revenue Analytics
+                    </button>
+                </div>
+                <button id="shop-status-toggle" type="button" onclick="toggleShopStatus()" title="Tap to open or close your shop" class="text-xs font-bold bg-tahee-pink/60 text-tahee-brown px-3 py-1.5 rounded-xl border border-tahee-brown flex items-center gap-1.5 hover:shadow-[2px_2px_0px_#5C4033] transition-all">
+                    <span id="shop-status-dot" class="w-2.5 h-2.5 bg-green-500 rounded-full border border-tahee-brown"></span>
+                    <span>Shop Status: <strong id="shop-status-text">OPEN NOW</strong></span>
+                    <span id="shop-status-hint" class="text-[10px] font-semibold text-tahee-brown/60">· Tap to close</span>
+                </button>
+            </div>
+
+            <!-- TAILOR TAB 1: SHOP SETUP & GPS PINNING -->
+            <div id="tailor-tab-setup" class="space-y-6">
+                <div class="tahee-card p-6 space-y-4">
+                    <h2 class="text-xl font-black">Register & Pin Your Tailor Shop</h2>
+                    <p class="text-xs text-tahee-brown/80">Help neighborhood customers find your home-based or hidden shop doorway.</p>
+
+                    <form class="space-y-4 pt-2">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Shop / Tailor Business Name</label>
+                                <input id="tailor-setup-shopname" type="text" value="Aling Nena’s Sewing Nook" class="w-full p-2.5 border-2 border-tahee-brown rounded-xl text-xs font-semibold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Contact Phone Number</label>
+                                <input type="text" value="+63 917 123 4567" class="w-full p-2.5 border-2 border-tahee-brown rounded-xl text-xs font-semibold">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold mb-1">Drop Precise GPS Doorway Pin on Map</label>
+                            <div class="relative z-0 w-full h-64 border-2 border-tahee-brown rounded-xl overflow-hidden">
+                                <div id="setup-map" class="absolute inset-0"></div>
+                            </div>
+                            <div class="flex flex-wrap items-center justify-between gap-2 mt-2 text-[11px] font-semibold">
+                                <span>📍 <strong id="setup-pin-coords">—</strong> <span class="text-tahee-brown/60">· Tap the map or drag the pin to your doorway</span></span>
+                                <button type="button" onclick="useMyLocation()" class="tahee-btn-secondary text-[11px] px-3 py-1 flex items-center gap-1">
+                                    <i data-lucide="locate-fixed" class="w-3.5 h-3.5"></i> Use My Current Location
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold mb-1">Last-Mile Entrance Directions (For Hard-to-Find Locations)</label>
+                            <textarea id="tailor-setup-directions" rows="2" class="w-full p-2.5 border-2 border-tahee-brown rounded-xl text-xs font-semibold" placeholder="e.g. Yellow gate behind sari-sari store. Press blue doorbell twice.">Yellow gate behind sari-sari store with blue bell.</textarea>
+                        </div>
+
+                        <button type="button" onclick="saveShopProfile()" class="tahee-btn-primary px-6 py-2.5 text-xs">Save Shop Profile</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAILOR TAB 2: ORDER MANAGEMENT QUEUE -->
+            <div id="tailor-tab-queue" class="space-y-6 hidden">
+                <div class="tahee-card p-6 space-y-4">
+                    <div>
+                        <h2 class="text-xl font-black">Active Patahi Queue</h2>
+                        <p class="text-xs text-tahee-brown/80">Manage fitting dates and update order statuses.</p>
+                    </div>
+
+                    <!-- Queue cards are built by renderQueue() -->
+                    <div id="queue-list" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- TAILOR TAB 3: SALES & REVENUE ANALYTICS -->
+            <div id="tailor-tab-analytics" class="space-y-6 hidden">
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="tahee-card p-5 bg-tahee-pink/30 space-y-1">
+                        <span class="text-xs font-bold text-tahee-brown/70 uppercase">Total Monthly Revenue</span>
+                        <div class="text-3xl font-black">₱24,850.00</div>
+                        <span class="text-[10px] text-green-700 font-bold">↑ +18% from last month</span>
+                    </div>
+                    <div class="tahee-card p-5 bg-tahee-yellow/40 space-y-1">
+                        <span class="text-xs font-bold text-tahee-brown/70 uppercase">Completed Orders</span>
+                        <div class="text-3xl font-black">18 Fits</div>
+                        <span class="text-[10px] text-tahee-brown/80 font-bold">Avg. 2.4 days completion</span>
+                    </div>
+                    <div class="tahee-card p-5 bg-tahee-blue/40 space-y-1">
+                        <span class="text-xs font-bold text-tahee-brown/70 uppercase">Rush Fee Surcharges</span>
+                        <div class="text-3xl font-black">₱3,250.00</div>
+                        <span class="text-[10px] text-tahee-brown/80 font-bold">From 13 expedited orders</span>
+                    </div>
+                </div>
+
+                <!-- Revenue Breakdown Categories -->
+                <div class="tahee-card p-6 space-y-4">
+                    <h3 class="font-bold text-base">Earnings Breakdown by Service Category</h3>
+                    <div class="space-y-3 text-xs font-bold">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Sewing Services (Patahi & Alterations)</span>
+                                <span>₱18,200.00 (73%)</span>
+                            </div>
+                            <div class="w-full h-3 bg-gray-200 rounded-full border border-tahee-brown overflow-hidden">
+                                <div class="h-full bg-tahee-pink w-[73%]"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Repurposed & Custom Handmade Goods</span>
+                                <span>₱6,650.00 (27%)</span>
+                            </div>
+                            <div class="w-full h-3 bg-gray-200 rounded-full border border-tahee-brown overflow-hidden">
+                                <div class="h-full bg-tahee-yellow w-[27%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t-2 border-tahee-brown py-4 px-4 text-center text-xs font-semibold text-tahee-brown/80 mt-12">
+        <p>© 2026 Tahee Order Management & Tailor Discovery Platform. Dedicated to local Filipino artisans.</p>
+    </footer>
+
+    <!-- MODAL 1: AUTHENTICATION & ROLE SELECTION -->
+    <div id="auth-modal" class="fixed inset-0 bg-tahee-brown/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden modal-fade">
+        <div class="tahee-card max-w-md w-full p-6 space-y-5 relative bg-white">
+            <button onclick="closeModal('auth-modal')" class="absolute top-4 right-4 text-sm font-bold w-7 h-7 border border-tahee-brown rounded-full flex items-center justify-center hover:bg-tahee-pink">✕</button>
+
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-tahee-pink rounded-full border-2 border-tahee-brown p-1 mx-auto shadow-sm">
+                    <svg viewBox="0 0 200 200" class="w-full h-full">
+                        <use href="#lola-svg-template" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-black">Welcome to Tahee</h2>
+                <p class="text-xs text-tahee-brown/80">Sign in to track custom orders or list your tailor shop.</p>
+            </div>
+
+            <form onsubmit="handleSignIn(event)" class="space-y-4">
+                <button type="button" onclick="fillGoogleDemo()" class="w-full py-2.5 border-2 border-tahee-brown rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-tahee-bg hover:bg-tahee-yellow transition-colors">
+                    <i data-lucide="mail" class="w-4 h-4"></i> Sign in with Google / Gmail
+                </button>
+
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-tahee-brown/30"></div>
+                    <span class="flex-shrink mx-2 text-[10px] uppercase font-bold text-tahee-brown/60">Or Enter Details</span>
+                    <div class="flex-grow border-t border-tahee-brown/30"></div>
+                </div>
+
+                <div class="space-y-2">
+                    <input id="auth-name" type="text" placeholder="Full Name" value="Maria Santos" required class="w-full p-2.5 border-2 border-tahee-brown rounded-xl text-xs font-semibold">
+                    <input id="auth-email" type="email" placeholder="Gmail Address" value="maria.santos@gmail.com" required class="w-full p-2.5 border-2 border-tahee-brown rounded-xl text-xs font-semibold">
+                    <input id="auth-shop" type="text" placeholder="Shop Name (Optional for Tailors)" class="w-full p-2.5 border-2 border-tahee-brown rounded-xl text-xs font-semibold">
+                </div>
+
+                <!-- Role Persona Switcher -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-extrabold">Select Your Role:</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div id="role-option-customer" onclick="selectRoleOption('customer')" class="border-2 border-tahee-brown bg-tahee-pink/40 p-3 rounded-2xl cursor-pointer flex flex-col items-center text-center transition-all shadow-[2px_2px_0px_#5C4033]">
+                            <i data-lucide="user-check" class="w-5 h-5 mb-1"></i>
+                            <span class="text-xs font-bold">Ako ay Nagpapatahi</span>
+                            <span class="text-[9px] opacity-80">(Customer)</span>
+                        </div>
+                        <div id="role-option-tailor" onclick="selectRoleOption('tailor')" class="border-2 border-tahee-brown bg-white p-3 rounded-2xl cursor-pointer flex flex-col items-center text-center transition-all opacity-70 hover:opacity-100">
+                            <i data-lucide="scissors" class="w-5 h-5 mb-1"></i>
+                            <span class="text-xs font-bold">Ako ay Mananahi</span>
+                            <span class="text-[9px] opacity-80">(Tailor / Seamstress)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="tahee-btn-primary w-full py-3 text-xs font-black">Continue to Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: LAST MILE ENTRANCE GUIDE -->
+    <div id="last-mile-modal" class="fixed inset-0 bg-tahee-brown/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden modal-fade">
+        <div class="tahee-card max-w-sm w-full p-6 space-y-4 relative bg-white">
+            <button onclick="closeModal('last-mile-modal')" class="absolute top-4 right-4 text-sm font-bold w-7 h-7 border border-tahee-brown rounded-full flex items-center justify-center hover:bg-tahee-pink">✕</button>
+
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-tahee-yellow rounded-full border-2 border-tahee-brown p-0.5">
+                    <svg viewBox="0 0 200 200" class="w-full h-full">
+                        <use href="#lola-svg-template" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="modal-shop-name" class="font-bold text-base">Aling Nena’s Sewing Nook</h3>
+                    <p class="text-[11px] text-tahee-brown/70">Doorway Entrance Note</p>
+                </div>
+            </div>
+
+            <div class="space-y-2 bg-tahee-bg p-3 rounded-xl border border-tahee-brown text-xs">
+                <p><strong>Address:</strong> <span id="modal-shop-address">Sampaguita St., Gate 3</span></p>
+                <p><strong>Directions:</strong> <span id="modal-shop-directions">Yellow gate behind sari-sari store with blue bell.</span></p>
+            </div>
+
+            <button onclick="closeModal('last-mile-modal')" class="tahee-btn-primary w-full py-2 text-xs">Got It!</button>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PLACE NEW ORDER WITH RUSH TOGGLE -->
+    <div id="new-order-modal" class="fixed inset-0 bg-tahee-brown/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden modal-fade">
+        <div class="tahee-card max-w-md w-full p-6 space-y-4 relative bg-white">
+            <button onclick="closeModal('new-order-modal')" class="absolute top-4 right-4 text-sm font-bold w-7 h-7 border border-tahee-brown rounded-full flex items-center justify-center hover:bg-tahee-pink">✕</button>
+
+            <h2 class="text-xl font-black">Place Custom Patahi Order</h2>
+            <p id="order-modal-shop-title" class="text-xs text-tahee-brown/80 font-bold">Tailor: Aling Nena’s Sewing Nook</p>
+
+            <form onsubmit="handleCreateOrder(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold mb-1">Item Description / Fitting Specs</label>
+                    <input id="order-desc" type="text" placeholder="e.g. Barong Filipiniana with piña organza sleeve" required class="w-full p-2 border-2 border-tahee-brown rounded-xl text-xs font-semibold">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Estimated Cost (₱)</label>
+                        <input id="order-cost" type="number" min="0" value="1000" oninput="updateOrderPreview()" class="w-full p-2 border-2 border-tahee-brown rounded-xl text-xs font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Target Pickup Date</label>
+                        <input id="order-date" type="date" value="2026-10-26" class="w-full p-2 border-2 border-tahee-brown rounded-xl text-xs font-semibold">
+                    </div>
+                </div>
+
+                <!-- Rush Surcharge Toggle -->
+                <div class="p-3 bg-tahee-yellow/50 border-2 border-tahee-brown rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-extrabold block">⚡ Priority Rush Order (+₱250)</span>
+                        <span class="text-[10px] text-tahee-brown/80">Guarantees 24–48h completion</span>
+                    </div>
+                    <input type="checkbox" id="rush-toggle" onchange="updateOrderPreview()" class="w-5 h-5 accent-tahee-brown cursor-pointer">
+                </div>
+
+                <!-- Price summary (filled in by updateOrderPreview) -->
+                <div class="p-3 bg-tahee-bg border-2 border-dashed border-tahee-brown/40 rounded-xl text-xs font-semibold space-y-1">
+                    <div class="flex justify-between"><span>Subtotal</span><span id="preview-subtotal">₱1,000.00</span></div>
+                    <div class="flex justify-between text-tahee-brown/80"><span>Tahee Service Fee (6.5%)</span><span id="preview-fee">₱65.00</span></div>
+                    <div class="flex justify-between font-black text-sm border-t border-tahee-brown/20 pt-1"><span>Estimated Total</span><span id="preview-total">₱1,065.00</span></div>
+                </div>
+
+                <button type="submit" class="tahee-btn-primary w-full py-2.5 text-xs font-black">Confirm Order & Generate Ticket</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: DIGITAL RECEIPT TICKET -->
+    <div id="receipt-modal" onclick="if (event.target === this) closeModal('receipt-modal')" class="fixed inset-0 bg-tahee-brown/60 backdrop-blur-sm z-50 flex justify-center px-4 py-8 hidden modal-fade overflow-y-auto">
+        <!-- Pinned to the corner of the screen so it stays visible while scrolling -->
+        <button onclick="closeModal('receipt-modal')" aria-label="Close ticket" class="fixed top-4 right-4 w-10 h-10 bg-white border-2 border-tahee-brown rounded-full font-black text-lg flex items-center justify-center hover:bg-tahee-pink z-10 shadow-[2px_2px_0px_#5C4033]">✕</button>
+
+        <!-- my-auto centers short tickets but lets tall ones scroll from the top -->
+        <div class="relative max-w-sm w-full my-auto">
+            <!-- Filled in by openReceiptModal() -->
+            <div id="receipt-modal-ticket"></div>
+
+            <div class="mt-4 flex justify-center gap-3">
+                <button onclick="closeModal('receipt-modal')" class="tahee-btn-secondary text-xs px-6 py-2 rounded-xl">Close</button>
+                <button onclick="window.print()" class="tahee-btn-primary text-xs px-6 py-2 rounded-xl">Print Receipt Ticket</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: REPORT SCAM / ISSUE MODAL -->
+    <div id="report-modal" class="fixed inset-0 bg-tahee-brown/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden modal-fade">
+        <div class="tahee-card max-w-md w-full p-6 space-y-4 relative bg-white">
+            <button onclick="closeModal('report-modal')" class="absolute top-4 right-4 text-sm font-bold w-7 h-7 border border-tahee-brown rounded-full flex items-center justify-center hover:bg-tahee-pink">✕</button>
+
+            <div class="flex items-center gap-2 text-red-700">
+                <div class="w-8 h-8 rounded-full bg-red-100 border border-red-400 flex items-center justify-center">
+                    <i data-lucide="flag" class="w-4 h-4 text-red-600"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-tahee-brown">Submit Report / Flag Issue</h2>
+                    <p id="report-target-subtitle" class="text-[11px] text-tahee-brown/80 font-bold">Target: Aling Nena’s Sewing Nook</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleReportSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold mb-1">Reason for Flagging / Reporting</label>
+                    <select id="report-reason" required class="w-full p-2.5 border-2 border-tahee-brown rounded-xl text-xs font-semibold bg-tahee-bg">
+                        <option value="">-- Select Reason --</option>
+                        <option value="fake_shop">Fake Shop or Non-existent Address</option>
+                        <option value="scam_payment">Payment Issue / Unrecognized Surcharge</option>
+                        <option value="lost_fabric">Damaged or Lost Fabric Material</option>
+                        <option value="misleading_loc">Incorrect or Misleading Map Pin</option>
+                        <option value="unprofessional">Unprofessional Behavior or No Response</option>
+                        <option value="other">Other Violation</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold mb-1">Detailed Explanation</label>
+                    <textarea id="report-details" rows="3" required placeholder="Describe what happened with clear details..." class="w-full p-2.5 border-2 border-tahee-brown rounded-xl text-xs font-semibold"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold mb-1">Attach Evidence / Photo (Optional)</label>
+                    <input type="file" accept="image/*" class="w-full text-xs text-tahee-brown border-2 border-tahee-brown p-1.5 rounded-xl bg-tahee-bg cursor-pointer">
+                </div>
+
+                <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-300 text-[10px] text-amber-900 font-medium">
+                    ⚠️ False reports violate community terms. Our support team reviews all flag submissions within 24 hours.
+                </div>
+
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white border-2 border-tahee-brown font-bold w-full py-2.5 text-xs rounded-xl shadow-[2px_2px_0px_#5C4033]">
+                    Submit Report & Flag to Support
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 6: THEMED POPUP (replaces browser alerts) -->
+    <div id="tahee-popup" onclick="if (event.target === this) closeModal('tahee-popup')" class="fixed inset-0 bg-tahee-brown/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden modal-fade">
+        <div class="tahee-receipt max-w-xs w-full rounded-3xl overflow-hidden text-center">
+            <div class="receipt-edge-top w-full"></div>
+
+            <div class="bg-tahee-brown px-6 pt-4 pb-5 space-y-3">
+                <div id="tahee-popup-icon" class="w-16 h-16 bg-tahee-pink rounded-full border-2 border-white mx-auto flex items-center justify-center text-3xl shadow-md">😊</div>
+                <h3 id="tahee-popup-title" class="font-black text-xl text-tahee-yellow">Salamat po!</h3>
+            </div>
+
+            <div class="bg-tahee-pink/30 px-6 py-4 border-b-2 border-dashed border-tahee-brown/30">
+                <p id="tahee-popup-message" class="text-xs font-bold text-tahee-brown leading-relaxed">Thank you for rating your patahi fitting experience!</p>
+            </div>
+
+            <div class="p-4 bg-white">
+                <button onclick="closeModal('tahee-popup')" class="tahee-btn-primary w-full py-2.5 text-xs font-black">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 7: THEMED CONFIRM (asks "are you sure?") -->
+    <div id="tahee-confirm" onclick="if (event.target === this) closeModal('tahee-confirm')" class="fixed inset-0 bg-tahee-brown/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden modal-fade">
+        <div class="tahee-receipt max-w-xs w-full rounded-3xl overflow-hidden text-center">
+            <div class="receipt-edge-top w-full"></div>
+
+            <div class="bg-tahee-brown px-6 pt-4 pb-5 space-y-3">
+                <div id="tahee-confirm-icon" class="w-16 h-16 bg-tahee-pink rounded-full border-2 border-white mx-auto flex items-center justify-center text-3xl shadow-md">⚠️</div>
+                <h3 id="tahee-confirm-title" class="font-black text-xl text-tahee-yellow">Are you sure?</h3>
+            </div>
+
+            <div class="bg-tahee-pink/30 px-6 py-4 border-b-2 border-dashed border-tahee-brown/30">
+                <p id="tahee-confirm-message" class="text-xs font-bold text-tahee-brown leading-relaxed"></p>
+            </div>
+
+            <div class="p-4 bg-white grid grid-cols-2 gap-3">
+                <button onclick="closeModal('tahee-confirm')" class="tahee-btn-secondary w-full py-2.5 text-xs font-black">Go Back</button>
+                <button id="tahee-confirm-yes" class="bg-red-500 hover:bg-red-600 text-white border-2 border-tahee-brown font-black w-full py-2.5 text-xs rounded-xl shadow-[3px_3px_0px_#5C4033]">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide-item');
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.style.opacity = (i === index) ? '1' : '0';
+            });
+            document.getElementById('slide-num-indicator').innerText = `${index + 1} / ${slides.length}`;
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        setInterval(nextSlide, 5000);
+
+        // App User State
+        let currentUser = {
+            email: 'maria.santos@gmail.com',
+            name: 'Maria Santos',
+            shopName: 'Maria’s Tailor Nook',
+            role: 'customer'
+        };
+
+        function fillGoogleDemo() {
+            document.getElementById('auth-email').value = "maria.santos@gmail.com";
+            document.getElementById('auth-name').value = "Maria Santos";
+            document.getElementById('auth-shop').value = "Maria's Tailor Nook";
+        }
+
+        function selectRoleOption(role) {
+            currentUser.role = role;
+            const custOption = document.getElementById('role-option-customer');
+            const tailorOption = document.getElementById('role-option-tailor');
+
+            if (role === 'customer') {
+                custOption.className = "border-2 border-tahee-brown bg-tahee-pink/40 p-3 rounded-2xl cursor-pointer flex flex-col items-center text-center transition-all shadow-[2px_2px_0px_#5C4033]";
+                tailorOption.className = "border-2 border-tahee-brown bg-white p-3 rounded-2xl cursor-pointer flex flex-col items-center text-center transition-all opacity-70 hover:opacity-100";
+            } else {
+                tailorOption.className = "border-2 border-tahee-brown bg-tahee-pink/40 p-3 rounded-2xl cursor-pointer flex flex-col items-center text-center transition-all shadow-[2px_2px_0px_#5C4033]";
+                custOption.className = "border-2 border-tahee-brown bg-white p-3 rounded-2xl cursor-pointer flex flex-col items-center text-center transition-all opacity-70 hover:opacity-100";
+            }
+        }
+
+        function handleSignIn(e) {
+            e.preventDefault();
+            currentUser.email = document.getElementById('auth-email').value;
+            currentUser.name = document.getElementById('auth-name').value;
+            currentUser.shopName = document.getElementById('auth-shop').value;
+
+            closeModal('auth-modal');
+            document.getElementById('user-display-name').innerText = currentUser.name;
+            renderPersonaView();
+        }
+
+        function openAuthModal() {
+            document.getElementById('auth-modal').classList.remove('hidden');
+        }
+
+        function renderPersonaView() {
+            const custView = document.getElementById('customer-view');
+            const tailorView = document.getElementById('tailor-view');
+            const roleBadge = document.getElementById('header-role-badge');
+
+            if (currentUser.role === 'customer') {
+                custView.classList.remove('hidden');
+                tailorView.classList.add('hidden');
+                roleBadge.innerText = "Nagpapatahi";
+                roleBadge.className = "text-xs bg-tahee-blue text-tahee-brown border border-tahee-brown px-3 py-1 rounded-full font-bold";
+            } else {
+                tailorView.classList.remove('hidden');
+                custView.classList.add('hidden');
+                roleBadge.innerText = "Mananahi";
+                roleBadge.className = "text-xs bg-tahee-yellow text-tahee-brown border border-tahee-brown px-3 py-1 rounded-full font-bold";
+            }
+        }
+
+        function switchCustomerTab(tabName) {
+            ['map', 'specialty', 'orders', 'ticket'].forEach(t => {
+                document.getElementById(`cust-tab-${t}`).classList.add('hidden');
+                document.getElementById(`cust-tab-${t}-btn`).classList.remove('active');
+            });
+            document.getElementById(`cust-tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`cust-tab-${tabName}-btn`).classList.add('active');
+        }
+
+        function switchTailorTab(tabName) {
+            ['setup', 'queue', 'analytics'].forEach(t => {
+                document.getElementById(`tailor-tab-${t}`).classList.add('hidden');
+                document.getElementById(`tailor-tab-${t}-btn`).classList.remove('active');
+            });
+            document.getElementById(`tailor-tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tailor-tab-${tabName}-btn`).classList.add('active');
+        }
+
+        // Turn every .ticket-map box inside `container` into a small Leaflet map with a Lola pin
+        function initTicketMaps(container) {
+            if (typeof L === 'undefined') return;
+            container.querySelectorAll('.ticket-map').forEach(box => {
+                const spot = [Number(box.dataset.lat), Number(box.dataset.lng)];
+                const miniMap = L.map(box, {
+                    zoomControl: false, dragging: false, scrollWheelZoom: false,
+                    doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false
+                }).setView(spot, 17);
+                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    maxZoom: 19,
+                    attribution: "&copy; OpenStreetMap"
+                }).addTo(miniMap);
+                L.marker(spot, { icon: lolaIcon('Shop Entrance', box.dataset.color) }).addTo(miniMap);
+                box._miniMap = miniMap;
+
+                // Redraw when the ticket tab becomes visible (maps drawn while hidden come out grey)
+                new ResizeObserver(() => miniMap.invalidateSize()).observe(box);
+            });
+        }
+
+        // Clean up old maps before their tickets get redrawn
+        function clearTicketMaps(container) {
+            container.querySelectorAll('.ticket-map').forEach(box => {
+                if (box._miniMap) box._miniMap.remove();
+            });
+        }
+
+        function openReceiptModal(code) {
+            const order = orders.find(o => o.code === code);
+            if (!order) return;
+            const modalTicket = document.getElementById('receipt-modal-ticket');
+            clearTicketMaps(modalTicket);
+            modalTicket.innerHTML = ticketHTML(order, false, 'tailor');
+            initTicketMaps(modalTicket);
+            lucide.createIcons();
+            document.getElementById('receipt-modal').classList.remove('hidden');
+        }
+
+        function showTaheePopup(icon, title, message) {
+            document.getElementById('tahee-popup-icon').innerText = icon;
+            document.getElementById('tahee-popup-title').innerText = title;
+            document.getElementById('tahee-popup-message').innerText = message;
+            document.getElementById('tahee-popup').classList.remove('hidden');
+        }
+
+        function setReceiptRating(type) {
+            const ratings = {
+                great:   { icon: '😊', title: 'Salamat po!', message: 'Thank you for rating your patahi fitting experience!' },
+                neutral: { icon: '😐', title: 'Salamat po!', message: 'Thanks for your feedback! We’ll share it with the tailor so they can do even better.' },
+                sad:     { icon: '🙁', title: 'Pasensya po!', message: 'Sorry to hear that. Your feedback has been sent to the tailor so they can make it right.' }
+            };
+            const r = ratings[type];
+            showTaheePopup(r.icon, r.title, r.message);
+        }
+
+        function highlightTailor(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.classList.add('ring-4', 'ring-tahee-pink');
+                setTimeout(() => card.classList.remove('ring-4', 'ring-tahee-pink'), 2000);
+            }
+        }
+
+        // ===== SEARCH & FILTERS (Explore Map tab) =====
+        let activeTailorFilter = 'all';
+
+        function filterTailors(type) {
+            activeTailorFilter = type;
+
+            // Highlight the selected filter button
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                const selected = chip.dataset.filter === type;
+                chip.classList.toggle('bg-tahee-pink', selected);
+                chip.classList.toggle('font-bold', selected);
+                chip.classList.toggle('bg-white', !selected);
+                chip.classList.toggle('font-semibold', !selected);
+                chip.classList.toggle('hover:bg-tahee-yellow', !selected);
+            });
+
+            applyTailorFilters();
+        }
+
+        function applyTailorFilters() {
+            const query = document.getElementById('tailor-search').value.trim().toLowerCase();
+            let shown = 0;
+
+            document.querySelectorAll('[data-tags]').forEach(card => {
+                const tags = card.dataset.tags;
+                const matchesFilter = activeTailorFilter === 'all' || tags.split(' ').includes(activeTailorFilter);
+                const matchesSearch = !query || card.textContent.toLowerCase().includes(query) || tags.includes(query);
+                const visible = matchesFilter && matchesSearch;
+
+                card.classList.toggle('hidden', !visible);
+                if (visible) shown++;
+
+                // Show/hide the matching Lola pin on the map
+                const shop = tailors.find(t => t.cardId === card.id);
+                if (shop && shop.marker) {
+                    if (visible) shop.marker.addTo(map);
+                    else map.removeLayer(shop.marker);
+                }
+            });
+
+            document.getElementById('tailor-count').innerText = shown + (shown === 1 ? ' Hidden Tailor' : ' Hidden Tailors');
+            document.getElementById('no-tailors-msg').classList.toggle('hidden', shown > 0);
+        }
+
+        function openLastMileModal(name, address, directions) {
+            document.getElementById('modal-shop-name').innerText = name;
+            document.getElementById('modal-shop-address').innerText = address;
+            document.getElementById('modal-shop-directions').innerText = directions;
+            document.getElementById('last-mile-modal').classList.remove('hidden');
+        }
+
+        function openReportModal(targetName, context) {
+            document.getElementById('report-target-subtitle').innerText = `Target: ${targetName} (${context})`;
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        function handleReportSubmit(e) {
+            e.preventDefault();
+            const reason = document.getElementById('report-reason').value;
+            closeModal('report-modal');
+            showTaheePopup('🚩', 'Report Submitted', 'Your report has been sent to the Tahee support team for review. Thank you for helping keep the community safe!');
+            document.getElementById('report-reason').value = "";
+            document.getElementById('report-details').value = "";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Pressing Esc closes the top-most open popup
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            const modals = ['tahee-confirm', 'tahee-popup', 'report-modal', 'receipt-modal', 'new-order-modal', 'last-mile-modal', 'auth-modal'];
+            const open = modals.find(id => !document.getElementById(id).classList.contains('hidden'));
+            if (open) closeModal(open);
+        });
+
+        // ===== ORDERS & TICKETS =====
+        // Every order lives in the `orders` list. The ticket tab, the Live Order Tracking tab
+        // and the tailor's queue are all drawn from it by renderAll().
+
+        // Shop details used on each new ticket (names must match the ones in the "Place Patahi Order" buttons)
+        const SHOP_INFO = {
+            'Aling Nena’s Sewing Nook': { address: 'Sampaguita St., Gate 3, Brgy. Lalakay', note: 'Yellow gate behind sari-sari store with blue bell.', color: 'bg-tahee-pink', coords: [15.0305, 120.6170] },
+            'Mang Cardo’s Custom Suits': { address: 'Rizal Ave., Alley 2, House #42', note: 'Second floor brown wooden door up the spiral stairs.', color: 'bg-tahee-yellow', coords: [15.0272, 120.6215] }
+        };
+        const RUSH_FEE = 250;
+        const SERVICE_FEE_RATE = 0.065; // 6.5% Tahee platform fee, paid by the customer
+        const STEPS = ['Design Confirmed', 'Cutting Fabric', 'Sewing Assembly', 'Ready for Pickup'];
+        const QUEUE_STEPS = ['Measurement & Design Confirmed', 'Cutting & Fabric Preparation', 'Sewing & Assembly In-Progress', 'Final Fitting / Ready for Pickup'];
+
+        // The demo order that used to be hard-coded on the page
+        const SAMPLE_ORDER = {
+            code: 'TH-8821',
+            shop: 'Aling Nena’s Sewing Nook',
+            customer: 'Maria Santos',
+            desc: 'Filipiniana Modern Barong Dress',
+            items: [
+                { label: 'Filipiniana Barong Sewing Base', amount: 850 },
+                { label: 'Organza Fabric & Piña Lining', amount: 150 },
+                { label: '⚡ Priority Rush Surcharge', amount: RUSH_FEE }
+            ],
+            rush: true,
+            pickup: 'Oct 26, 2026',
+            date: 'Oct 23, 2026',
+            payment: 'GCash Verified',
+            address: SHOP_INFO['Aling Nena’s Sewing Nook'].address,
+            note: SHOP_INFO['Aling Nena’s Sewing Nook'].note,
+            color: 'bg-tahee-pink',
+            step: 3,
+            status: 'active'
+        };
+
+        let currentOrderShop = '';
+        let orders = loadOrders();
+
+        function loadOrders() {
+            let saved = null;
+            try { saved = JSON.parse(localStorage.getItem('tahee-orders')); } catch (err) {}
+            if (!Array.isArray(saved)) return [{ ...SAMPLE_ORDER }]; // first visit: start with the demo order
+
+            // Upgrade orders saved by the earlier version (they had no items/step)
+            saved.forEach(o => {
+                if (!o.items) {
+                    o.items = [{ label: o.desc, amount: o.cost || 0 }];
+                    if (o.rush) o.items.push({ label: '⚡ Priority Rush Surcharge', amount: RUSH_FEE });
+                }
+                if (!o.step) o.step = 1;
+                if (!o.customer) o.customer = 'Maria Santos';
+            });
+
+            return saved;
+        }
+
+        function saveOrders() {
+            try { localStorage.setItem('tahee-orders', JSON.stringify(orders)); } catch (err) {}
+        }
+
+        function peso(amount) {
+            return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML;
+        }
+
+        function roundPeso(amount) {
+            return Math.round(amount * 100) / 100;
+        }
+
+        // Tailor's charges (sewing + rush), before the Tahee service fee
+        function orderSubtotal(o) {
+            return o.items.reduce((sum, item) => sum + item.amount, 0);
+        }
+
+        function serviceFeeRate(o) {
+            return o.serviceFeeRate ?? SERVICE_FEE_RATE; // older saved orders use the current rate
+        }
+
+        function orderServiceFee(o) {
+            return roundPeso(orderSubtotal(o) * serviceFeeRate(o));
+        }
+
+        function orderTotal(o) {
+            return roundPeso(orderSubtotal(o) + orderServiceFee(o));
+        }
+
+        function feeLabel(o) {
+            return `Tahee Service Fee (${+(serviceFeeRate(o) * 100).toFixed(2)}%)`;
+        }
+
+        // Live price summary in the "Place Custom Patahi Order" form
+        function updateOrderPreview() {
+            const cost = Math.max(0, Number(document.getElementById('order-cost').value) || 0);
+            const rush = document.getElementById('rush-toggle').checked;
+            const subtotal = cost + (rush ? RUSH_FEE : 0);
+            const fee = roundPeso(subtotal * SERVICE_FEE_RATE);
+            document.getElementById('preview-subtotal').innerText = peso(subtotal);
+            document.getElementById('preview-fee').innerText = peso(fee);
+            document.getElementById('preview-total').innerText = peso(roundPeso(subtotal + fee));
+        }
+
+        function nextOrderCode() {
+            const numbers = orders.map(o => parseInt(o.code.replace('TH-', ''), 10) || 0);
+            return 'TH-' + (Math.max(8821, ...numbers) + 1);
+        }
+
+        function openNewOrderModal(shopName) {
+            if (!isShopOpen(shopName)) {
+                showTaheePopup('🔒', 'Shop is Closed', `${shopName} isn’t taking orders right now. Please check back when the shop is open!`);
+                return;
+            }
+            currentOrderShop = shopName;
+            document.getElementById('order-modal-shop-title').innerText = "Tailor: " + shopName;
+            updateOrderPreview();
+            document.getElementById('new-order-modal').classList.remove('hidden');
+        }
+
+        function handleCreateOrder(e) {
+            e.preventDefault();
+            const info = SHOP_INFO[currentOrderShop] || { address: 'Address to follow', note: '', color: 'bg-tahee-pink' };
+            const pickup = document.getElementById('order-date').value;
+            const desc = document.getElementById('order-desc').value;
+            const rush = document.getElementById('rush-toggle').checked;
+
+            const items = [{ label: desc, amount: Number(document.getElementById('order-cost').value) || 0 }];
+            if (rush) items.push({ label: '⚡ Priority Rush Surcharge', amount: RUSH_FEE });
+
+            const order = {
+                code: nextOrderCode(),
+                shop: currentOrderShop,
+                customer: currentUser.name,
+                desc: desc,
+                items: items,
+                rush: rush,
+                serviceFeeRate: SERVICE_FEE_RATE,
+                pickup: pickup ? new Date(pickup + 'T00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBA',
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                payment: 'Pay on Pickup',
+                address: info.address,
+                note: info.note,
+                color: info.color,
+                step: 1,
+                status: 'active'
+            };
+
+            orders.unshift(order); // newest order on top
+            saveOrders();
+            renderAll();
+
+            closeModal('new-order-modal');
+            e.target.reset();
+            viewTicket(order.code);
+            showTaheePopup('🧵', 'Order Placed!', `Your patahi ticket #${order.code} is ready. Track it anytime in Live Order Tracking!`);
+        }
+
+        function updateOrderStep(code, step) {
+            const order = orders.find(o => o.code === code);
+            if (!order) return;
+            order.step = Number(step);
+            saveOrders();
+            renderAll();
+            showTaheePopup('✂️', 'Status Updated', `Order #${code} is now at step ${order.step}: ${STEPS[order.step - 1]}.`);
+        }
+
+        function customerOnly(action) {
+            if (currentUser.role === 'customer') return true;
+            showTaheePopup('🧾', 'Customers Only', `Only the customer can ${action}. Switch to the Nagpapatahi (customer) view to do this.`);
+            return false;
+        }
+
+        function markPickedUp(code) {
+            if (!customerOnly('confirm that an order was picked up')) return;
+            const order = orders.find(o => o.code === code);
+            if (!order) return;
+            order.status = 'completed';
+            order.step = STEPS.length;
+            saveOrders();
+            renderAll();
+            closeModal('receipt-modal');
+            showTaheePopup('🎉', 'Picked Up!', `Order #${code} is complete. Don’t forget to rate your fitting experience on the ticket!`);
+        }
+
+        function showTaheeConfirm(icon, title, message, yesLabel, onYes) {
+            document.getElementById('tahee-confirm-icon').innerText = icon;
+            document.getElementById('tahee-confirm-title').innerText = title;
+            document.getElementById('tahee-confirm-message').innerText = message;
+            const yes = document.getElementById('tahee-confirm-yes');
+            yes.innerText = yesLabel;
+            yes.onclick = function () {
+                closeModal('tahee-confirm');
+                onYes();
+            };
+            document.getElementById('tahee-confirm').classList.remove('hidden');
+        }
+
+        function cancelOrder(code) {
+            if (!customerOnly('cancel an order')) return;
+            showTaheeConfirm('✖', 'Cancel this order?', `Order #${code} will be cancelled and removed from the tailor's queue.`, 'Cancel Order', function () {
+                const order = orders.find(o => o.code === code);
+                if (!order) return;
+                order.status = 'cancelled';
+                saveOrders();
+                renderAll();
+                closeModal('receipt-modal');
+                showTaheePopup('✖', 'Order Cancelled', `Order #${code} has been cancelled.`);
+            });
+        }
+
+        function deleteOrder(code) {
+            if (!customerOnly('delete a ticket')) return;
+            showTaheeConfirm('🗑️', 'Delete this ticket?', `Ticket #${code} will be permanently removed. This can't be undone.`, 'Delete', function () {
+                orders = orders.filter(o => o.code !== code);
+                saveOrders();
+                renderAll();
+                closeModal('receipt-modal');
+                showTaheePopup('🗑️', 'Ticket Deleted', `Ticket #${code} has been removed.`);
+            });
+        }
+
+        // Hero "View Digital Receipt Ticket" button: open the ticket tab and scroll down to it
+        function goToTickets() {
+            if (currentUser.role !== 'customer') {
+                currentUser.role = 'customer';
+                selectRoleOption('customer');
+                renderPersonaView();
+            }
+            switchCustomerTab('ticket');
+            document.getElementById('cust-tab-ticket').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function viewTicket(code) {
+            switchCustomerTab('ticket');
+            const ticket = document.getElementById('ticket-' + code);
+            if (ticket) ticket.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Active orders first, then completed ones
+        function sortedOrders() {
+            return [...orders.filter(o => o.status === 'active'), ...orders.filter(o => o.status !== 'active')];
+        }
+
+        function emptyStateHTML(message) {
+            return `<div class="tahee-card p-6 text-center text-xs font-bold text-tahee-brown/70">${message}</div>`;
+        }
+
+        // viewer: 'customer' (their own ticket) or 'tailor' (Issue Ticket preview, no pickup/cancel buttons)
+        function ticketHTML(o, withId = true, viewer = 'customer') {
+            const done = o.status === 'completed';
+            const cancelled = o.status === 'cancelled';
+            const closed = done || cancelled;
+            const badge = done ? '✔ Completed' : cancelled ? '✖ Cancelled' : '● Active Order';
+            const statusText = done ? 'Picked Up' : cancelled ? 'Cancelled' : STEPS[o.step - 1];
+            const coords = (SHOP_INFO[o.shop] || {}).coords;
+
+            return `
+            <div ${withId ? `id="ticket-${o.code}"` : ''} class="tahee-receipt max-w-sm mx-auto text-left rounded-3xl overflow-hidden scroll-mt-24 ${closed ? 'opacity-70' : ''}">
+                <div class="receipt-edge-top w-full"></div>
+
+                <div class="bg-tahee-brown text-white p-6 text-center space-y-2">
+                    <div class="w-16 h-16 ${o.color} rounded-full border-2 border-white mx-auto p-1 shadow-md">
+                        <svg viewBox="0 0 200 200" class="w-full h-full"><use href="#lola-svg-template" /></svg>
+                    </div>
+                    <h3 class="font-black text-xl text-tahee-yellow">${escapeHtml(o.shop)}</h3>
+                    <span class="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white ${closed ? 'bg-white/20 text-white' : 'bg-tahee-pink text-tahee-brown'}">
+                        ${badge}
+                    </span>
+                </div>
+
+                ${done ? `
+                <div class="bg-tahee-pink/30 p-3 border-b-2 border-tahee-brown text-center space-y-1">
+                    <p class="text-xs font-bold text-tahee-brown">How was your patahi fitting experience?</p>
+                    <div class="flex items-center justify-center gap-4 pt-1">
+                        <button onclick="setReceiptRating('great')" class="w-10 h-10 rounded-full bg-white border-2 border-tahee-brown flex items-center justify-center text-xl hover:scale-110 transition-transform">😊</button>
+                        <button onclick="setReceiptRating('neutral')" class="w-10 h-10 rounded-full bg-white border-2 border-tahee-brown flex items-center justify-center text-xl hover:scale-110 transition-transform">😐</button>
+                        <button onclick="setReceiptRating('sad')" class="w-10 h-10 rounded-full bg-white border-2 border-tahee-brown flex items-center justify-center text-xl hover:scale-110 transition-transform">🙁</button>
+                    </div>
+                </div>` : ''}
+
+                <div class="p-6 text-center border-b-2 border-dashed border-tahee-brown/30">
+                    <span class="text-xs font-bold text-tahee-brown/70 uppercase tracking-widest block">Total Amount</span>
+                    <div class="text-3xl font-black text-tahee-brown mt-1">${peso(orderTotal(o))}</div>
+                </div>
+
+                <div class="p-6 space-y-2 text-xs font-semibold border-b-2 border-dashed border-tahee-brown/30">
+                    ${o.items.map((item, i) => `
+                    <div class="flex justify-between gap-4 ${i > 0 ? 'text-tahee-brown/80' : ''}">
+                        <span>${escapeHtml(item.label)}</span>
+                        <span>${peso(item.amount)}</span>
+                    </div>`).join('')}
+                    <div class="border-t border-tahee-brown/20 pt-2 flex justify-between">
+                        <span>Subtotal</span>
+                        <span>${peso(orderSubtotal(o))}</span>
+                    </div>
+                    <div class="flex justify-between text-tahee-brown/80">
+                        <span>${feeLabel(o)}</span>
+                        <span>${peso(orderServiceFee(o))}</span>
+                    </div>
+                    <div class="border-t border-tahee-brown/20 pt-2 flex justify-between font-black text-sm">
+                        <span>Total</span>
+                        <span>${peso(orderTotal(o))}</span>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-tahee-bg space-y-2 border-b-2 border-tahee-brown text-[11px] text-tahee-brown">
+                    <span class="text-[10px] font-extrabold uppercase flex items-center gap-1">
+                        <i data-lucide="map-pin" class="w-3 h-3"></i> Tailor Shop Location & Entrance Pin
+                    </span>
+                    ${coords ? `<div class="ticket-map w-full h-32 rounded-xl border border-tahee-brown overflow-hidden relative z-0" data-lat="${coords[0]}" data-lng="${coords[1]}" data-color="${o.color}"></div>` : ''}
+                    <div class="space-y-0.5">
+                        <p class="font-bold">${escapeHtml(o.address)}</p>
+                        ${o.note ? `<p class="text-tahee-brown/80 text-[10px]">Entrance Note: ${escapeHtml(o.note)}</p>` : ''}
+                    </div>
+                    ${coords ? `
+                    <a href="https://www.openstreetmap.org/directions?engine=fossgis_osrm_foot&route=${USER_LOCATION[0]},${USER_LOCATION[1]};${coords[0]},${coords[1]}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[10px] font-bold bg-white border border-tahee-brown px-2.5 py-1 rounded-full hover:bg-tahee-yellow">
+                        <i data-lucide="navigation" class="w-3 h-3"></i> Get Directions
+                    </a>` : ''}
+                </div>
+
+                <div class="p-4 bg-white text-[10px] text-tahee-brown/80 space-y-1">
+                    <div class="flex justify-between">
+                        <span>Order Code: <strong>#${o.code}</strong></span>
+                        <span>Ordered: <strong>${o.date}</strong></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Pickup: <strong>${o.pickup}</strong></span>
+                        <span>Payment: <strong>${o.payment}</strong></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Status: <strong>${statusText}</strong></span>
+                    </div>
+                </div>
+
+                ${viewer === 'tailor' ? (closed ? '' : `
+                <div class="p-3 bg-tahee-blue/40 border-t-2 border-dashed border-tahee-brown/30 text-center text-[11px] font-bold text-tahee-brown">
+                    🧾 Only the customer can confirm pickup or cancel this order.
+                </div>`) : `
+                <div class="p-4 bg-white border-t-2 border-dashed border-tahee-brown/30">
+                    ${closed ? `
+                    <button onclick="deleteOrder('${o.code}')" class="w-full py-2 text-xs font-bold rounded-xl border-2 border-tahee-brown bg-white hover:bg-red-50 text-red-700 flex items-center justify-center gap-1.5">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Ticket
+                    </button>` : `
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="markPickedUp('${o.code}')" class="tahee-btn-secondary w-full py-2 text-xs flex items-center justify-center gap-1.5">
+                            <i data-lucide="package-check" class="w-4 h-4"></i> Picked Up
+                        </button>
+                        <button onclick="cancelOrder('${o.code}')" class="w-full py-2 text-xs font-bold rounded-xl border-2 border-tahee-brown bg-white hover:bg-red-50 text-red-700 flex items-center justify-center gap-1.5">
+                            <i data-lucide="x-circle" class="w-4 h-4"></i> Cancel Order
+                        </button>
+                    </div>`}
+                </div>`}
+
+                <div class="p-3 bg-amber-50 border-t-2 border-tahee-brown text-center">
+                    <button onclick="openReportModal('Ticket #${o.code}', 'Digital Ticket')" class="text-xs font-bold text-red-700 hover:text-red-800 flex items-center justify-center gap-1.5 w-full py-1">
+                        <i data-lucide="flag" class="w-3.5 h-3.5 text-red-600"></i> Report Fraud / Scam with this Ticket
+                    </button>
+                </div>
+
+                <div class="receipt-edge-bottom w-full"></div>
+            </div>`;
+        }
+
+        function trackingHTML(o) {
+            const done = o.status === 'completed';
+            const cancelled = o.status === 'cancelled';
+
+            const stepBars = STEPS.map((label, i) => {
+                const stepNum = i + 1;
+                let bar = 'bg-gray-200 border border-tahee-brown/30';
+                let text = 'text-tahee-brown/50';
+                if (cancelled) { /* leave every step grey */ }
+                else if (done || stepNum < o.step) { bar = 'bg-tahee-blue border border-tahee-brown'; text = ''; }
+                else if (stepNum === o.step) { bar = 'bg-tahee-pink border-2 border-tahee-brown'; text = 'font-bold text-tahee-brown'; }
+                return `
+                <div class="space-y-1">
+                    <div class="w-full h-3 rounded-full ${bar}"></div>
+                    <span class="block ${text}">${stepNum}. ${label}</span>
+                </div>`;
+            }).join('');
+
+            return `
+            <div class="tahee-card p-6 space-y-6 ${done || cancelled ? 'opacity-70' : ''}">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b-2 border-tahee-brown/20 pb-4">
+                    <div>
+                        <span class="text-xs bg-tahee-yellow border border-tahee-brown px-2.5 py-0.5 rounded-full font-bold">Order #${o.code}</span>
+                        <h2 class="text-xl font-bold mt-1">${escapeHtml(o.desc)}</h2>
+                        <p class="text-xs text-tahee-brown/70">Tailor: <strong>${escapeHtml(o.shop)}</strong></p>
+                    </div>
+                    <div class="text-left sm:text-right space-y-2">
+                        <div>
+                            <span class="text-xs text-tahee-brown/70 block">Target Fitting Date:</span>
+                            <span class="text-sm font-bold bg-tahee-blue/50 border border-tahee-brown px-3 py-1 rounded-lg inline-block">${o.pickup}</span>
+                        </div>
+                        <div class="flex items-center gap-2 justify-start sm:justify-end">
+                            <button onclick="viewTicket('${o.code}')" class="tahee-btn-secondary text-xs px-3 py-1.5 rounded-xl flex items-center gap-1">
+                                <i data-lucide="receipt" class="w-3.5 h-3.5"></i> View Digital Ticket
+                            </button>
+                            <button onclick="openReportModal('Order #${o.code}', 'Active Order')" class="bg-amber-50 hover:bg-amber-100 text-tahee-brown border-2 border-tahee-brown text-xs px-3 py-1.5 rounded-xl font-bold flex items-center gap-1">
+                                <i data-lucide="flag" class="w-3.5 h-3.5 text-red-600"></i> Report Issue / Scam
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <span>Order Progress Status</span>
+                        <span class="text-tahee-brown ${done ? 'bg-tahee-blue' : cancelled ? 'bg-gray-200' : 'bg-tahee-pink'} border border-tahee-brown px-2 py-0.5 rounded-full">
+                            ${done ? '✔ Picked Up' : cancelled ? '✖ Cancelled' : `Step ${o.step} of ${STEPS.length} (${STEPS[o.step - 1]})`}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2 text-center text-[11px] font-semibold">${stepBars}</div>
+                </div>
+            </div>`;
+        }
+
+        function queueHTML(o) {
+            // One button per stage: done = blue ✓, current = pink, upcoming = white
+            const stepButtons = QUEUE_STEPS.map((label, i) => {
+                const stepNum = i + 1;
+                const isDone = stepNum < o.step;
+                const isCurrent = stepNum === o.step;
+                const style = isCurrent
+                    ? 'bg-tahee-pink border-2 shadow-[2px_2px_0px_#5C4033] font-black'
+                    : isDone
+                        ? 'bg-tahee-blue border hover:shadow-[2px_2px_0px_#5C4033] font-semibold'
+                        : 'bg-white border hover:bg-tahee-yellow hover:shadow-[2px_2px_0px_#5C4033] font-semibold';
+                return `
+                    <button type="button" onclick="updateOrderStep('${o.code}', ${stepNum})" ${isCurrent ? 'disabled aria-current="step"' : ''}
+                        class="${style} border-tahee-brown rounded-xl px-2 py-2 text-[11px] leading-tight text-left flex items-start gap-1.5 transition-all ${isCurrent ? 'cursor-default' : ''}">
+                        <span class="shrink-0 w-5 h-5 rounded-full border border-tahee-brown bg-white flex items-center justify-center text-[10px] font-black">${isDone ? '✓' : stepNum}</span>
+                        <span>${label}</span>
+                    </button>`;
+            }).join('');
+
+            return `
+            <div class="border-2 border-tahee-brown rounded-2xl p-4 bg-white space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-tahee-brown/20 pb-2">
+                    <div>
+                        <span class="text-xs bg-tahee-pink border border-tahee-brown px-2 py-0.5 rounded-full font-bold">Order #${o.code}</span>
+                        <h3 class="font-bold text-sm mt-1">${escapeHtml(o.desc)}</h3>
+                        <p class="text-xs text-tahee-brown/70">Customer: ${escapeHtml(o.customer)} • Shop: ${escapeHtml(o.shop)}</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        ${o.rush ? `<span class="bg-tahee-yellow border border-tahee-brown text-xs px-2.5 py-1 rounded-full font-bold">⚡ Rush (+${peso(RUSH_FEE)})</span>` : ''}
+                        <button onclick="openReceiptModal('${o.code}')" class="tahee-btn-secondary text-xs px-3 py-1 flex items-center gap-1">
+                            <i data-lucide="receipt" class="w-3.5 h-3.5"></i> Issue Ticket
+                        </button>
+                        <button onclick="openReportModal('Order #${o.code} (Customer ${escapeHtml(o.customer)})', 'Tailor Order Queue')" class="bg-amber-50 hover:bg-amber-100 border-2 border-tahee-brown text-tahee-brown text-xs px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
+                            <i data-lucide="flag" class="w-3 h-3 text-red-600"></i> Report Customer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-1">
+                    <span class="text-xs">Update Progress Stage:</span>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${stepButtons}</div>
+                </div>
+            </div>`;
+        }
+
+        function renderAll() {
+            const active = orders.filter(o => o.status === 'active');
+
+            const ticketList = document.getElementById('new-tickets-list');
+            clearTicketMaps(ticketList);
+            ticketList.innerHTML = orders.length
+                ? sortedOrders().map(o => ticketHTML(o)).join('')
+                : emptyStateHTML('No tickets yet. Place a patahi order to get your first ticket!');
+            initTicketMaps(ticketList);
+
+            document.getElementById('tracking-list').innerHTML = orders.length
+                ? sortedOrders().map(trackingHTML).join('')
+                : emptyStateHTML('No orders to track yet.');
+
+            document.getElementById('queue-list').innerHTML = active.length
+                ? active.map(queueHTML).join('')
+                : '<p class="text-xs font-bold text-tahee-brown/70 text-center py-4">No active orders in the queue. 🎉</p>';
+
+            document.getElementById('active-orders-badge').innerText = active.length + ' Active';
+            document.getElementById('tailor-orders-badge').innerText = active.length + (active.length === 1 ? ' Order' : ' Orders');
+
+            lucide.createIcons(); // draw the icons inside the new cards
+        }
+
+        // ===== SHOP OPEN / CLOSED STATUS =====
+        // Saved as { "Shop name": false } for closed shops; shops not listed are open.
+        let shopStatus = {};
+        try { shopStatus = JSON.parse(localStorage.getItem('tahee-shop-status')) || {}; } catch (err) {}
+
+        function isShopOpen(shopName) {
+            return shopStatus[shopName] !== false;
+        }
+
+        // The tailor's own shop is whatever name is in the Shop Setup form
+        function myShopName() {
+            return document.getElementById('tailor-setup-shopname').value;
+        }
+
+        function toggleShopStatus() {
+            const name = myShopName();
+            shopStatus[name] = !isShopOpen(name);
+            try { localStorage.setItem('tahee-shop-status', JSON.stringify(shopStatus)); } catch (err) {}
+            renderShopStatus();
+            showTaheePopup(
+                isShopOpen(name) ? '🟢' : '🔴',
+                isShopOpen(name) ? 'Shop is Open!' : 'Shop is Closed',
+                isShopOpen(name)
+                    ? 'Customers can now see that you’re open and place patahi orders.'
+                    : 'Customers will see that you’re closed and won’t be able to place new orders until you reopen.'
+            );
+        }
+
+        function renderShopStatus() {
+            // Tailor's toggle
+            const open = isShopOpen(myShopName());
+            document.getElementById('shop-status-dot').className = `w-2.5 h-2.5 ${open ? 'bg-green-500' : 'bg-red-500'} rounded-full border border-tahee-brown`;
+            document.getElementById('shop-status-text').innerText = open ? 'OPEN NOW' : 'CLOSED';
+            document.getElementById('shop-status-hint').innerText = open ? '· Tap to close' : '· Tap to open';
+            document.getElementById('shop-status-toggle').classList.toggle('bg-tahee-pink/60', open);
+            document.getElementById('shop-status-toggle').classList.toggle('bg-gray-200', !open);
+
+            // Customer-side badges on the shop cards
+            tailors.forEach(t => {
+                const badge = document.getElementById('status-' + t.cardId);
+                if (!badge) return;
+                const shopOpen = isShopOpen(t.shop);
+                badge.innerText = shopOpen ? '● Open' : '● Closed';
+                badge.classList.toggle('bg-green-100', shopOpen);
+                badge.classList.toggle('bg-red-100', !shopOpen);
+                badge.classList.toggle('text-red-700', !shopOpen);
+            });
+        }
+
+        // ===== TAILOR SHOP SETUP MAP (Register & Pin Your Tailor Shop) =====
+        let setupMap = null;
+        let setupPin = null;
+
+        function loadShopProfile() {
+            try { return JSON.parse(localStorage.getItem('tahee-shop-profile')); }
+            catch (err) { return null; }
+        }
+
+        // Use the saved pin & directions everywhere the shop appears (Explore map, tickets)
+        function applyShopProfile(profile) {
+            const info = SHOP_INFO[profile.name];
+            if (!info || !profile.coords) return;
+            info.coords = profile.coords;
+            if (profile.directions) info.note = profile.directions;
+
+            const shop = tailors.find(t => t.shop === profile.name);
+            if (shop) {
+                shop.coords = profile.coords;
+                if (shop.marker) shop.marker.setLatLng(profile.coords);
+            }
+        }
+
+        function showSetupPinCoords() {
+            const spot = setupPin.getLatLng();
+            document.getElementById('setup-pin-coords').innerText = spot.lat.toFixed(5) + ', ' + spot.lng.toFixed(5);
+        }
+
+        function moveSetupPin(spot) {
+            setupPin.setLatLng(spot);
+            showSetupPinCoords();
+        }
+
+        function initSetupMap() {
+            if (typeof L === 'undefined') return;
+            const shopName = document.getElementById('tailor-setup-shopname').value;
+            const start = (SHOP_INFO[shopName] || {}).coords || USER_LOCATION;
+
+            setupMap = L.map('setup-map').setView(start, 17);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(setupMap);
+
+            setupPin = L.marker(start, { draggable: true, icon: lolaIcon('Your Shop Pin', 'bg-tahee-pink') }).addTo(setupMap);
+            setupPin.on('dragend', showSetupPinCoords);
+            setupMap.on('click', e => moveSetupPin(e.latlng));
+            showSetupPinCoords();
+
+            // The tailor view starts hidden, so redraw the map once it becomes visible
+            new ResizeObserver(() => setupMap.invalidateSize()).observe(document.getElementById('setup-map'));
+        }
+
+        function useMyLocation() {
+            if (!navigator.geolocation || !setupPin) {
+                showTaheePopup('📍', 'Location Unavailable', 'Your browser can’t share your location. Tap the map to place your pin instead.');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const spot = [pos.coords.latitude, pos.coords.longitude];
+                    moveSetupPin(spot);
+                    setupMap.setView(spot, 18);
+                },
+                () => showTaheePopup('📍', 'Location Unavailable', 'We couldn’t get your location. Tap the map to place your pin instead.')
+            );
+        }
+
+        function saveShopProfile() {
+            const spot = setupPin ? setupPin.getLatLng() : null;
+            const profile = {
+                name: document.getElementById('tailor-setup-shopname').value,
+                directions: document.getElementById('tailor-setup-directions').value.trim(),
+                coords: spot ? [Number(spot.lat.toFixed(6)), Number(spot.lng.toFixed(6))] : null
+            };
+            try { localStorage.setItem('tahee-shop-profile', JSON.stringify(profile)); } catch (err) {}
+
+            applyShopProfile(profile);
+            renderShopStatus();
+            renderAll(); // refresh the ticket maps with the new pin
+            showTaheePopup('📍', 'Shop Saved!', 'Shop details & map pin updated! Customers will now see your shop at the new pin.');
+        }
+
+        // Restore the last saved shop profile when the page loads
+        const savedProfile = loadShopProfile();
+        if (savedProfile) {
+            document.getElementById('tailor-setup-shopname').value = savedProfile.name;
+            if (savedProfile.directions) document.getElementById('tailor-setup-directions').value = savedProfile.directions;
+            applyShopProfile(savedProfile);
+        }
+        initSetupMap();
+        renderShopStatus();
+
+        renderAll(); // draw everything when the page loads
+    </script>
+    <script>
+    function showTailorsFor(category) {
+        const mapTab = document.getElementById("cust-tab-map");
+
+        // 1) Find your real tab button that opens the map, and click it
+        const mapTabButton = Array.from(document.querySelectorAll('[onclick*="map"]'))
+            .find(function (el) { return !mapTab.contains(el); });
+
+        if (mapTabButton) {
+            mapTabButton.click();
+        } else {
+            // Backup: only hide the tab sections that sit next to the map tab
+            Array.from(mapTab.parentElement.children).forEach(function (el) {
+                if (el.id && el.id.startsWith("cust-tab-") && el.id !== "cust-tab-map") {
+                    el.classList.add("hidden");
+                }
+            });
+            mapTab.classList.remove("hidden");
+        }
+
+        // 2) Redraw the map now that it's visible
+        setTimeout(function () {
+            if (typeof map !== "undefined") map.invalidateSize();
+        }, 100);
+
+        // 3) Filter the shops
+        if (typeof filterTailors === "function") filterTailors(category);
+
+        // 4) Scroll to the map
+        mapTab.scrollIntoView({ behavior: "smooth" });
+    }
+</script>
+</body>
+</html>
