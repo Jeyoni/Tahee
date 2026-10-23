@@ -1,5 +1,4 @@
 # Tahee 🌸🪡
-With Tahee, Lola Tahee connects you to local mananahi and keeps your patahi updated from sukat to sundo—relax lang, Apo, si Lola na ang bahala!
 ### **Problem Statement**
 Localized Filipino tailors (_mananahi_) struggle with informal order tracking and disorganized pickup schedules, often resulting in poor communication with the customers, missed deadlines, and lost revenue from unmanaged rush requests. Without a dedicated tracking system, tailors frequently lose visibility over order completion timelines and daily business performance. 
 
@@ -27,6 +26,7 @@ Tahee introduces them to a digital system that allows tailors to manage their or
 		Consumers choosing to alter, tailor, and repair their clothes equates to them
 	buying and wasting less.
 
+With Tahee, Lola Tahee connects you to local mananahi and keeps your patahi updated from sukat to sundo—relax lang, Apo, si Lola na ang bahala!
 
 ---
 
